@@ -1,9 +1,24 @@
 import { Tabs } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
+import { Image, View } from 'react-native';
+
+const HeaderLogo = () => (
+  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+    <Image 
+      source={require('../../img/AYCLOGO.png')} 
+      style={{ width: 32, height: 32, marginRight: 8, borderRadius: 16 }} 
+      resizeMode="contain"
+    />
+  </View>
+);
 
 export default function TabLayout() {
   return (
-    <Tabs screenOptions={{ tabBarActiveTintColor: '#3b82f6', headerShown: true }}>
+    <Tabs screenOptions={{ 
+      tabBarActiveTintColor: '#3b82f6', 
+      headerShown: true,
+      headerLeft: () => <View style={{ marginLeft: 16 }}><HeaderLogo /></View>
+    }}>
       <Tabs.Screen
         name="index"
         options={{

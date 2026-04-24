@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import io from 'socket.io-client';
-import { API_URL } from '../config';
+import { API_URL } from '../_config';
 
 export default function HomeScreen() {
   const [liveMatch, setLiveMatch] = useState<any>(null);

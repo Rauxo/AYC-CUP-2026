@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
-import { API_URL } from '../config';
+import { API_URL } from '../_config';
 
 export default function MatchesScreen() {
   const [matches, setMatches] = useState<any[]>([]);

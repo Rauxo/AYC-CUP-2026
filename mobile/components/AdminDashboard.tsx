@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Modal, FlatList, Alert } from 'react-native';
-import { API_URL } from '../app/config';
+import { API_URL } from '../app/_config';
 
 const CustomSelect = ({ label, value, options, onSelect, placeholder }: any) => {
   const [modalVisible, setModalVisible] = useState(false);

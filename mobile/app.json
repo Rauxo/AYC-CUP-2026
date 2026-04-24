@@ -13,9 +13,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#ffffff",
         "foregroundImage": "./img/AYCLOGO.png",
-        "backgroundImage": "#ffffff",
         "monochromeImage": "./img/AYCLOGO.png"
       },
       "edgeToEdgeEnabled": true,
