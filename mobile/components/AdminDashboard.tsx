@@ -40,6 +40,7 @@ export default function AdminDashboard({ token, onLogout }: { token: string, onL
   const [teams, setTeams] = useState<any[]>([]);
   const [rounds, setRounds] = useState<any[]>([]);
   const [activeMatch, setActiveMatch] = useState<any>(null);
+  const [selectedTeamHistory, setSelectedTeamHistory] = useState('');
 
   // Match State
   const [newMatchName, setNewMatchName] = useState('');
@@ -105,9 +106,9 @@ export default function AdminDashboard({ token, onLogout }: { token: string, onL
       const s = batTeam.players.find((p:any) => p.isStriker);
       const ns = batTeam.players.find((p:any) => p.isNonStriker);
       const b = bowlTeam.players.find((p:any) => p.isBowling);
-      if (s) setStriker(s.name);
-      if (ns) setNonStriker(ns.name);
-      if (b) setBowler(b.name);
+      setStriker(s ? s.name : '');
+      setNonStriker(ns ? ns.name : '');
+      setBowler(b ? b.name : '');
     }
   }, [activeMatch]);
 
@@ -304,26 +305,71 @@ export default function AdminDashboard({ token, onLogout }: { token: string, onL
                 )) : <Text style={{fontStyle: 'italic', color: '#6b7280'}}>No undefeated teams remaining.</Text>}
              </View>
 
-             <Text style={styles.subTitle}>📊 Round Results</Text>
-             {rounds.map(round => {
-                const roundMatches = matches.filter(m => m.status === 'completed' && m.name === round.name);
-                if (roundMatches.length === 0) return null;
-                return (
-                  <View key={round._id} style={{marginBottom: 12}}>
-                    <Text style={{fontWeight: 'bold', color: '#4b5563', marginBottom: 4}}>{round.name}</Text>
-                    {roundMatches.map(m => {
+             <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 16, borderBottomWidth: 1, borderBottomColor: '#eee', paddingBottom: 8, marginBottom: 12}}>
+               <Text style={{fontSize: 16, fontWeight: 'bold', color: '#374151'}}>📊 Match History</Text>
+             </View>
+             <CustomSelect placeholder="All Teams (Grouped by Round)" value={selectedTeamHistory} onSelect={setSelectedTeamHistory} options={[
+                {label: 'All Teams (Grouped by Round)', value: ''},
+                ...teams.map(t => ({label: t.name, value: t.name}))
+             ]} />
+             
+             {selectedTeamHistory ? (() => {
+               const teamMatches = matches.filter(m => m.status === 'completed' && (m.teamA.name === selectedTeamHistory || m.teamB.name === selectedTeamHistory));
+               const wins = teamMatches.filter(m => getMatchOutcome(m).winner === selectedTeamHistory).length;
+               const losses = teamMatches.filter(m => getMatchOutcome(m).loser === selectedTeamHistory).length;
+               
+               return (
+                 <View style={{marginTop: 12}}>
+                    <View style={{flexDirection: 'row', gap: 8, marginBottom: 12}}>
+                      <Text style={{backgroundColor: '#eff6ff', color: '#1e40af', padding: 8, borderRadius: 8, fontWeight: 'bold', overflow: 'hidden'}}>Total: {teamMatches.length}</Text>
+                      <Text style={{backgroundColor: '#f0fdf4', color: '#166534', padding: 8, borderRadius: 8, fontWeight: 'bold', overflow: 'hidden'}}>Wins: {wins}</Text>
+                      <Text style={{backgroundColor: '#fef2f2', color: '#991b1b', padding: 8, borderRadius: 8, fontWeight: 'bold', overflow: 'hidden'}}>Losses: {losses}</Text>
+                    </View>
+                    
+                    {teamMatches.length > 0 ? teamMatches.map((m, idx) => {
                       const outcome = getMatchOutcome(m);
+                      const isWin = outcome.winner === selectedTeamHistory;
+                      const isLoss = outcome.loser === selectedTeamHistory;
+                      const opponent = m.teamA.name === selectedTeamHistory ? m.teamB.name : m.teamA.name;
+                      
                       return (
-                        <View key={m._id} style={{backgroundColor: '#f9fafb', padding: 8, borderRadius: 4, marginBottom: 4}}>
-                          <Text style={{fontWeight: 'bold', color: '#047857'}}>W: {outcome.winner}</Text>
-                          <Text style={{fontWeight: 'bold', color: '#dc2626'}}>L: {outcome.loser}</Text>
-                          <Text style={{fontSize: 12, color: '#6b7280', marginTop: 4}}>{m.result}</Text>
+                        <View key={m._id} style={{backgroundColor: '#f9fafb', padding: 12, borderRadius: 8, marginBottom: 8, borderWidth: 1, borderColor: '#eee'}}>
+                           <Text style={{fontWeight: 'bold', color: '#374151', marginBottom: 4}}>{idx + 1}. {m.name}</Text>
+                           <Text style={{color: '#4b5563', marginBottom: 4}}>vs <Text style={{fontWeight: 'bold', color: '#111827'}}>{opponent}</Text></Text>
+                           <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+                              {isWin ? <Text style={{color: '#10b981', fontWeight: 'bold'}}>Win</Text> : (isLoss ? <Text style={{color: '#ef4444', fontWeight: 'bold'}}>Loss</Text> : <Text style={{color: '#6b7280', fontWeight: 'bold'}}>Tie</Text>)}
+                              <Text style={{fontSize: 12, color: '#6b7280', flex: 1, textAlign: 'right', marginLeft: 8}}>{isWin ? m.result : '-'}</Text>
+                           </View>
                         </View>
                       );
-                    })}
-                  </View>
-                );
-             })}
+                    }) : <Text style={{fontStyle: 'italic', color: '#6b7280', textAlign: 'center', marginVertical: 16}}>No completed matches for this team.</Text>}
+                 </View>
+               );
+             })() : (
+               rounds.map(round => {
+                  const roundMatches = matches.filter(m => m.status === 'completed' && m.name === round.name);
+                  if (roundMatches.length === 0) return null;
+                  return (
+                    <View key={round._id} style={{marginBottom: 16}}>
+                      <Text style={{fontWeight: 'bold', color: '#4b5563', marginBottom: 8, textTransform: 'uppercase', fontSize: 12}}>{round.name} Results</Text>
+                      {roundMatches.map(m => {
+                        const outcome = getMatchOutcome(m);
+                        return (
+                          <View key={m._id} style={{backgroundColor: '#f9fafb', padding: 12, borderRadius: 8, marginBottom: 8, borderWidth: 1, borderColor: '#eee'}}>
+                            <Text style={{fontWeight: 'bold', color: '#047857', marginBottom: 2}}>Winner: {outcome.winner !== 'Tie' ? outcome.winner : 'Tie'}</Text>
+                            <Text style={{fontWeight: 'bold', color: '#dc2626', marginBottom: 4}}>Loser: {outcome.loser !== 'Tie' ? outcome.loser : 'Tie'}</Text>
+                            <Text style={{fontSize: 12, color: '#6b7280'}}>{m.result}</Text>
+                          </View>
+                        );
+                      })}
+                    </View>
+                  );
+               })
+             )}
+             
+             {!selectedTeamHistory && matches.filter(m => m.status === 'completed').length === 0 && (
+                <Text style={{fontStyle: 'italic', color: '#6b7280', textAlign: 'center', marginVertical: 16}}>No completed matches yet.</Text>
+             )}
           </View>
         </View>
       ) : (

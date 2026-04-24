@@ -40,5 +40,11 @@ app.use('/api/matches', require('./routes/matches'));
 app.use('/api/teams', require('./routes/teams'));
 app.use('/api/rounds', require('./routes/rounds'));
 
+// Fallback routes in case reverse proxy (e.g. Nginx) strips the /api prefix
+app.use('/auth', require('./routes/auth'));
+app.use('/matches', require('./routes/matches'));
+app.use('/teams', require('./routes/teams'));
+app.use('/rounds', require('./routes/rounds'));
+
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

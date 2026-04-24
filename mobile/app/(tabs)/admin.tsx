@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
-import * as WebBrowser from 'expo-web-browser';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from '../config';
 import AdminDashboard from '../../components/AdminDashboard';
 
@@ -10,7 +10,25 @@ export default function AdminScreen() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [token, setToken] = useState(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [initialCheckDone, setInitialCheckDone] = useState(false);
+
+  useEffect(() => {
+    const checkToken = async () => {
+      try {
+        const storedToken = await AsyncStorage.getItem('adminToken');
+        if (storedToken) {
+          setToken(storedToken);
+          setIsLoggedIn(true);
+        }
+      } catch (e) {
+        console.error('Failed to load token', e);
+      } finally {
+        setInitialCheckDone(true);
+      }
+    };
+    checkToken();
+  }, []);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -42,6 +60,7 @@ export default function AdminScreen() {
       if (res.ok && data.token) {
         setIsLoggedIn(true);
         setToken(data.token);
+        await AsyncStorage.setItem('adminToken', data.token);
       } else {
         setError(data.msg || data.message || 'Invalid credentials');
       }
@@ -53,18 +72,18 @@ export default function AdminScreen() {
     }
   };
 
-  const openWebDashboard = async () => {
-    // We open the frontend React app admin dashboard
-    // If backend is API_URL, frontend is likely on 5173 locally
-    let webUrl = API_URL.replace('5000', '5173') + '/admin/dashboard';
-    if (API_URL.includes('10.0.2.2')) {
-      webUrl = 'http://10.0.2.2:5173/admin/dashboard';
-    }
-    await WebBrowser.openBrowserAsync(webUrl);
+  const handleLogout = async () => {
+    setIsLoggedIn(false);
+    setToken(null);
+    await AsyncStorage.removeItem('adminToken');
   };
 
+  if (!initialCheckDone) {
+    return <View style={styles.center}><ActivityIndicator size="large" color="#3b82f6" /></View>;
+  }
+
   if (isLoggedIn && token) {
-    return <AdminDashboard token={token} onLogout={() => { setIsLoggedIn(false); setToken(null); }} />;
+    return <AdminDashboard token={token} onLogout={handleLogout} />;
   }
 
   return (
