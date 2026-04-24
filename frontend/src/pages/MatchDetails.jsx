@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { io } from 'socket.io-client';
 
-const socket = io('http://localhost:5000');
+const socket = io('https://ayccup.zarviatechstar.in');
 
 const MatchDetails = () => {
   const { id } = useParams();
@@ -26,7 +26,7 @@ const MatchDetails = () => {
 
   const fetchMatch = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/matches/${id}`);
+      const res = await fetch(`https://ayccup.zarviatechstar.in/api/matches/${id}`);
       const data = await res.json();
       setMatch(data);
     } catch (err) {

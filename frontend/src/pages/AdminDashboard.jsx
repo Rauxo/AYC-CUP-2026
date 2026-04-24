@@ -48,19 +48,19 @@ const AdminDashboard = () => {
   }, [isAdmin]);
 
   const fetchMatches = async () => {
-    const res = await fetch('http://localhost:5000/api/matches');
+    const res = await fetch('https://ayccup.zarviatechstar.in/api/matches');
     const data = await res.json();
     setMatches(data);
   };
 
   const fetchTeams = async () => {
-    const res = await fetch('http://localhost:5000/api/teams');
+    const res = await fetch('https://ayccup.zarviatechstar.in/api/teams');
     const data = await res.json();
     setTeams(data);
   };
 
   const fetchRounds = async () => {
-    const res = await fetch('http://localhost:5000/api/rounds');
+    const res = await fetch('https://ayccup.zarviatechstar.in/api/rounds');
     const data = await res.json();
     setRounds(data);
   };
@@ -98,7 +98,7 @@ const AdminDashboard = () => {
 
   const handleCreateMatch = async (e) => {
     e.preventDefault();
-    const res = await fetch('http://localhost:5000/api/matches', {
+    const res = await fetch('https://ayccup.zarviatechstar.in/api/matches', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ name: newMatchName, teamA: newTeamA, teamB: newTeamB, totalOvers: newTotalOvers })
@@ -112,7 +112,7 @@ const AdminDashboard = () => {
   const handleCreateTeam = async (e) => {
     e.preventDefault();
     const players = newTeamPlayers.split(',').map(p => p.trim()).filter(p => p);
-    const res = await fetch('http://localhost:5000/api/teams', {
+    const res = await fetch('https://ayccup.zarviatechstar.in/api/teams', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ name: newTeamName, players })
@@ -128,7 +128,7 @@ const AdminDashboard = () => {
 
   const handleCreateRound = async (e) => {
     e.preventDefault();
-    const res = await fetch('http://localhost:5000/api/rounds', {
+    const res = await fetch('https://ayccup.zarviatechstar.in/api/rounds', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ name: newRoundName })
@@ -141,7 +141,7 @@ const AdminDashboard = () => {
 
   const handleEndMatch = async () => {
     if (!window.confirm('Are you sure you want to manually end this match?')) return;
-    const res = await fetch(`http://localhost:5000/api/matches/${activeMatch._id}/end`, {
+    const res = await fetch(`https://ayccup.zarviatechstar.in/api/matches/${activeMatch._id}/end`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ result: 'Match ended by admin' })
@@ -155,7 +155,7 @@ const AdminDashboard = () => {
 
   const handleStartMatch = async (e) => {
     e.preventDefault();
-    const res = await fetch(`http://localhost:5000/api/matches/${activeMatch._id}/start`, {
+    const res = await fetch(`https://ayccup.zarviatechstar.in/api/matches/${activeMatch._id}/start`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({
@@ -182,7 +182,7 @@ const AdminDashboard = () => {
       bowler
     };
 
-    const res = await fetch(`http://localhost:5000/api/matches/${activeMatch._id}/ball`, {
+    const res = await fetch(`https://ayccup.zarviatechstar.in/api/matches/${activeMatch._id}/ball`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(payload)

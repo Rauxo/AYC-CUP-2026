@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { io } from 'socket.io-client';
 
-const socket = io('http://localhost:5000');
+const socket = io('https://ayccup.zarviatechstar.in');
 
 const Home = () => {
   const [liveMatch, setLiveMatch] = useState(null);
@@ -28,7 +28,7 @@ const Home = () => {
 
   const fetchMatches = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/matches');
+      const res = await fetch('https://ayccup.zarviatechstar.in/api/matches');
       const data = await res.json();
       const live = data.find(m => m.status === 'live');
       setLiveMatch(live);

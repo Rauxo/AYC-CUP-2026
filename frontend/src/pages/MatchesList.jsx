@@ -11,7 +11,7 @@ const MatchesList = () => {
 
   const fetchMatches = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/matches');
+      const res = await fetch('https://ayccup.zarviatechstar.in/api/matches');
       const data = await res.json();
       setMatches(data);
     } catch (err) {

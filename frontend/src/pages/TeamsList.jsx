@@ -11,7 +11,7 @@ const TeamsList = () => {
 
   const fetchTeams = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/teams');
+      const res = await fetch('https://ayccup.zarviatechstar.in/api/teams');
       const data = await res.json();
       setTeams(data);
     } catch (err) {
