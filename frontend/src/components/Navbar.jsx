@@ -16,7 +16,7 @@ const Navbar = () => {
     <nav className="bg-blue-900 text-white shadow-lg sticky top-0 z-50">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <Link to="/" className="text-2xl font-bold flex items-center gap-2 hover-scale">
-          <Trophy className="text-yellow-400" />
+          <img src="/AYCLOGO.png" alt="AYC Logo" className="h-10 w-10 object-contain" />
           AYC CUP 2026
         </Link>
         <div className="flex gap-6 items-center font-medium">
