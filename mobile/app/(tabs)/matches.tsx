@@ -1,28 +1,50 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
+import io from 'socket.io-client';
 import { API_URL } from '../_config';
 
 export default function MatchesScreen() {
   const [matches, setMatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
-
-  useEffect(() => {
-    fetchMatches();
-  }, []);
 
   const fetchMatches = async () => {
     try {
       const res = await fetch(`${API_URL}/api/matches`);
       const data = await res.json();
       setMatches(data);
-    } catch (err) {
-      console.error('Error fetching matches', err);
+    } catch (e) {
+      console.error(e);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchMatches();
+  }, []);
+
+  useEffect(() => {
+    fetchMatches();
+    
+    const socket = io(API_URL);
+    socket.on('matchCreated', (newMatch: any) => {
+      setMatches(prev => [newMatch, ...prev]);
+    });
+    socket.on('matchUpdated', (updatedMatch: any) => {
+      setMatches(prev => prev.map(m => m._id === updatedMatch._id ? updatedMatch : m));
+    });
+
+    return () => {
+      socket.off('matchCreated');
+      socket.off('matchUpdated');
+      socket.disconnect();
+    };
+  }, []);
 
   if (loading) {
     return (
@@ -40,7 +62,10 @@ export default function MatchesScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView 
+      style={styles.container}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#3b82f6']} />}
+    >
       <Text style={styles.title}>All Matches</Text>
 
       {matches.length === 0 ? (

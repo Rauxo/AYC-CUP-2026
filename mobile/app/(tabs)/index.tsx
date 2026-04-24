@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
 import io from 'socket.io-client';
 import { API_URL } from '../_config';
@@ -8,6 +8,7 @@ export default function HomeScreen() {
   const [liveMatch, setLiveMatch] = useState<any>(null);
   const [upcomingMatches, setUpcomingMatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -22,8 +23,13 @@ export default function HomeScreen() {
       fetchMatches();
     });
 
+    socket.on('matchCreated', () => {
+      fetchMatches();
+    });
+
     return () => {
       socket.off('matchUpdated');
+      socket.off('matchCreated');
       socket.disconnect();
     };
   }, []);
@@ -41,8 +47,14 @@ export default function HomeScreen() {
       console.error('Error fetching matches', err);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchMatches();
+  }, []);
 
   if (loading) {
     return (
@@ -54,7 +66,10 @@ export default function HomeScreen() {
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView 
+      style={styles.container}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#3b82f6']} />}
+    >
       <View style={styles.banner}>
         <Text style={styles.bannerTitle}>AYC CUP 2026</Text>
         <Text style={styles.bannerSubtitle}>The ultimate cricket showdown.</Text>

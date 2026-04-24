@@ -1,15 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
 import { API_URL } from '../_config';
 
 export default function TeamsScreen() {
   const [teams, setTeams] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<any>(null);
-
-  useEffect(() => {
-    fetchTeams();
-  }, []);
 
   const fetchTeams = async () => {
     try {
@@ -20,8 +17,18 @@ export default function TeamsScreen() {
       console.error('Error fetching teams', err);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchTeams();
+  }, []);
+
+  useEffect(() => {
+    fetchTeams();
+  }, []);
 
   if (loading) {
     return (
@@ -33,7 +40,10 @@ export default function TeamsScreen() {
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView 
+      style={styles.container}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#3b82f6']} />}
+    >
       <Text style={styles.title}>All Teams</Text>
 
       {teams.length === 0 ? (

@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { io } from 'socket.io-client';
+
+const socket = io('https://ayccup.zarviatechstar.in');
 
 const MatchesList = () => {
   const [matches, setMatches] = useState([]);
@@ -7,6 +10,19 @@ const MatchesList = () => {
 
   useEffect(() => {
     fetchMatches();
+    
+    socket.on('matchCreated', (newMatch) => {
+      setMatches(prev => [newMatch, ...prev]);
+    });
+    
+    socket.on('matchUpdated', (updatedMatch) => {
+      setMatches(prev => prev.map(m => m._id === updatedMatch._id ? updatedMatch : m));
+    });
+
+    return () => {
+      socket.off('matchCreated');
+      socket.off('matchUpdated');
+    };
   }, []);
 
   const fetchMatches = async () => {

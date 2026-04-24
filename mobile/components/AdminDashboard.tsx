@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Modal, FlatList, Alert } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Modal, FlatList, Alert, RefreshControl } from 'react-native';
+import io from 'socket.io-client';
 import { API_URL } from '../app/_config';
 
 const CustomSelect = ({ label, value, options, onSelect, placeholder }: any) => {
@@ -41,6 +42,7 @@ export default function AdminDashboard({ token, onLogout }: { token: string, onL
   const [rounds, setRounds] = useState<any[]>([]);
   const [activeMatch, setActiveMatch] = useState<any>(null);
   const [selectedTeamHistory, setSelectedTeamHistory] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
 
   // Match State
   const [newMatchName, setNewMatchName] = useState('');
@@ -69,10 +71,32 @@ export default function AdminDashboard({ token, onLogout }: { token: string, onL
   const [wicketType, setWicketType] = useState('bowled');
   const [playerDismissed, setPlayerDismissed] = useState('');
 
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    Promise.all([fetchMatches(), fetchTeams(), fetchRounds()]).then(() => {
+      setRefreshing(false);
+    });
+  }, []);
+
   useEffect(() => {
     fetchMatches();
     fetchTeams();
     fetchRounds();
+
+    const socket = io(API_URL);
+    socket.on('matchCreated', (newMatch: any) => {
+      setMatches(prev => [newMatch, ...prev]);
+    });
+    socket.on('matchUpdated', (updatedMatch: any) => {
+      setMatches(prev => prev.map(m => m._id === updatedMatch._id ? updatedMatch : m));
+      setActiveMatch(prev => prev && prev._id === updatedMatch._id ? updatedMatch : prev);
+    });
+
+    return () => {
+      socket.off('matchCreated');
+      socket.off('matchUpdated');
+      socket.disconnect();
+    };
   }, []);
 
   const fetchMatches = async () => {
@@ -250,7 +274,10 @@ export default function AdminDashboard({ token, onLogout }: { token: string, onL
   const activeTeams = teams.filter(t => !eliminatedTeams.has(t.name));
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView 
+      style={styles.container}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#3b82f6']} />}
+    >
       <View style={styles.header}>
         <Text style={styles.headerText}>Admin Dashboard</Text>
         <TouchableOpacity style={styles.logoutBtn} onPress={onLogout}>

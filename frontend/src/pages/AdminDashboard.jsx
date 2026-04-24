@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { Navigate } from 'react-router-dom';
+import { io } from 'socket.io-client';
+
+const socket = io('https://ayccup.zarviatechstar.in');
 
 const AdminDashboard = () => {
   const { isAdmin, token } = useContext(AuthContext);
@@ -44,7 +47,21 @@ const AdminDashboard = () => {
       fetchMatches();
       fetchTeams();
       fetchRounds();
+      
+      socket.on('matchCreated', (newMatch) => {
+        setMatches(prev => [newMatch, ...prev]);
+      });
+      
+      socket.on('matchUpdated', (updatedMatch) => {
+        setMatches(prev => prev.map(m => m._id === updatedMatch._id ? updatedMatch : m));
+        setActiveMatch(prev => prev && prev._id === updatedMatch._id ? updatedMatch : prev);
+      });
     }
+    
+    return () => {
+      socket.off('matchCreated');
+      socket.off('matchUpdated');
+    };
   }, [isAdmin]);
 
   const fetchMatches = async () => {
