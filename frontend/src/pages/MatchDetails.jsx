@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { io } from 'socket.io-client';
 
-const socket = io('https://ayccup.zarviatechstar.in');
+const socket = io('https://ayccup.zarviatechstar.in', { path: '/api/socket.io' });
 
 const MatchDetails = () => {
   const { id } = useParams();

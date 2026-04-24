@@ -13,7 +13,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     fetchMatches();
-    const socket = io(API_URL);
+    const socket = io(API_URL, { path: '/api/socket.io' });
 
     socket.on('matchUpdated', (match: any) => {
       if (match.status === 'live') setLiveMatch(match);

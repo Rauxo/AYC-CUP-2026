@@ -12,7 +12,7 @@ export default function MatchDetailsScreen() {
 
   useEffect(() => {
     fetchMatch();
-    const socket = io(API_URL);
+    const socket = io(API_URL, { path: '/api/socket.io' });
 
     socket.on('matchUpdated', (updatedMatch: any) => {
       if (updatedMatch._id === id) {
@@ -169,7 +169,7 @@ export default function MatchDetailsScreen() {
 
         {match.result && <Text style={styles.resultText}>{match.result}</Text>}
         {match.toss && match.toss.wonBy && (
-          <Text style={styles.tossText}>{match.toss.wonBy} won the toss and elected to {match.toss.decision}</Text>
+          <Text style={styles.tossText}>{match.toss.wonBy} won the toss and selected to {match.toss.decision}</Text>
         )}
       </View>
 

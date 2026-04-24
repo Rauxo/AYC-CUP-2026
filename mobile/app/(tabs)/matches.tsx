@@ -31,7 +31,7 @@ export default function MatchesScreen() {
   useEffect(() => {
     fetchMatches();
     
-    const socket = io(API_URL);
+    const socket = io(API_URL, { path: '/api/socket.io' });
     socket.on('matchCreated', (newMatch: any) => {
       setMatches(prev => [newMatch, ...prev]);
     });

@@ -3,7 +3,7 @@ import { AuthContext } from '../context/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 
-const socket = io('https://ayccup.zarviatechstar.in');
+const socket = io('https://ayccup.zarviatechstar.in', { path: '/api/socket.io' });
 
 const AdminDashboard = () => {
   const { isAdmin, token } = useContext(AuthContext);
