@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import { API_URL } from '../config';
+import AdminDashboard from '../../components/AdminDashboard';
 
 export default function AdminScreen() {
   const [email, setEmail] = useState('');
@@ -21,23 +22,32 @@ export default function AdminScreen() {
     setError('');
 
     try {
-      const res = await fetch(`${API_URL}/api/admin/login`, {
+      const res = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
-      
-      const data = await res.json();
-      
-      if (res.ok) {
+
+      // Safely parse JSON — guard against HTML error pages
+      const text = await res.text();
+      let data: any = {};
+      try {
+        data = JSON.parse(text);
+      } catch {
+        console.error('Server returned non-JSON:', text.slice(0, 200));
+        setError('Server error: unexpected response. Check backend.');
+        return;
+      }
+
+      if (res.ok && data.token) {
         setIsLoggedIn(true);
         setToken(data.token);
       } else {
-        setError(data.message || 'Invalid credentials');
+        setError(data.msg || data.message || 'Invalid credentials');
       }
     } catch (err) {
       console.error('Login error', err);
-      setError('Network error. Is backend running?');
+      setError('Network error. Is the backend running?');
     } finally {
       setLoading(false);
     }
@@ -53,23 +63,8 @@ export default function AdminScreen() {
     await WebBrowser.openBrowserAsync(webUrl);
   };
 
-  if (isLoggedIn) {
-    return (
-      <View style={styles.center}>
-        <View style={styles.card}>
-          <Text style={styles.successTitle}>Login Successful!</Text>
-          <Text style={styles.successText}>
-            For full match control, scoring, and team management, please use the Web Admin Dashboard.
-          </Text>
-          <TouchableOpacity style={styles.button} onPress={openWebDashboard}>
-            <Text style={styles.buttonText}>Open Web Dashboard</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.button, {backgroundColor: '#ef4444', marginTop: 12}]} onPress={() => setIsLoggedIn(false)}>
-            <Text style={styles.buttonText}>Logout</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
+  if (isLoggedIn && token) {
+    return <AdminDashboard token={token} onLogout={() => { setIsLoggedIn(false); setToken(null); }} />;
   }
 
   return (
